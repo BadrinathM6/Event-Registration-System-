@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.title }} - Event Registration System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">{{ event.title }}</h1>
+                <p class="card-text">{{ event.description }}</p>
+                
+                <div class="row mt-3">
+                    <div class="col-sm-6">
+                        <p><strong><i class="fas fa-calendar"></i> Date:</strong><br>{{ event.date|date:"M d, Y H:i" }}</p>
+                        <p><strong><i class="fas fa-map-marker-alt"></i> Location:</strong><br>{{ event.location }}</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p><strong><i class="fas fa-users"></i> Capacity:</strong><br>{{ event.capacity }} attendees</p>
+                        <p><strong><i class="fas fa-chart-bar"></i> Registered:</strong><br>{{ event.registered_count }} / {{ event.capacity }}</p>
+                        <p><strong><i class="fas fa-ticket-alt"></i> Available:</strong><br>{{ event.available_spots }} spots</p>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <span class="badge bg-{% if event.status == 'active' %}success{% elif event.status == 'cancelled' %}danger{% else %}secondary{% endif %} fs-6">
+                        {{ event.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Actions</h5>
+            </div>
+            <div class="card-body">
+                {% if can_register %}
+                    <a href="{% url 'register_for_event' event.pk %}" class="btn btn-success btn-lg w-100 mb-2">
+                        <i class="fas fa-user-plus"></i> Register Now
+                    </a>
+                {% else %}
+                    {% if event.status == 'cancelled' %}
+                        <div class="alert alert-danger">Event Cancelled</div>
+                    {% elif event.is_full %}
+                        <div class="alert alert-warning">Event Full</div>
+                    {% else %}
+                        <div class="alert alert-info">Registration Closed</div>
+                    {% endif %}
+                {% endif %}
+                
+                {% if event.status == 'active' %}
+                    <form method="post" action="{% url 'cancel_event' event.pk %}" onsubmit="return confirm('Are you sure you want to cancel this event?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="fas fa-times"></i> Cancel Event
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Registration List -->
+        {% if registrations %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Registered Attendees ({{ registrations.count }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for registration in registrations %}
+                            <div class="list-group-item">
+                                <strong>{{ registration.attendee_name }}</strong><br>
+                                <small class="text-muted">{{ registration.attendee_email }}</small><br>
+                                <small class="text-muted">Registered: {{ registration.registered_at|date:"M d, Y H:i" }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
