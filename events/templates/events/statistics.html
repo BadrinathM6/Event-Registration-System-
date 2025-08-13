@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Statistics - Event Registration System{% endblock %}
+
+{% block content %}
+<h1>Event Statistics</h1>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="text-primary">{{ stats.total_events }}</h2>
+                <p class="card-text">Total Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="text-success">{{ stats.active_events }}</h2>
+                <p class="card-text">Active Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="text-danger">{{ stats.cancelled_events }}</h2>
+                <p class="card-text">Cancelled Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="text-info">{{ stats.total_registrations }}</h2>
+                <p class="card-text">Total Registrations</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Event Details</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Capacity</th>
+                        <th>Registered</th>
+                        <th>Fill Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a>
+                            </td>
+                            <td>{{ event.date|date:"M d, Y" }}</td>
+                            <td>
+                                <span class="badge bg-{% if event.status == 'active' %}success{% elif event.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                                    {{ event.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ event.capacity }}</td>
+                            <td>{{ event.registration_count }}</td>
+                            <td>
+                                {% widthratio event.registration_count event.capacity 100 %}%
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar" role="progressbar" style="width: {% widthratio event.registration_count event.capacity 100 %}%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

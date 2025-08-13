@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Events - Event Registration System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1>Events</h1>
+        
+        <!-- Filter Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        {{ form.search }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.status }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.sort_by }}
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Events Grid -->
+        <div class="row">
+            {% for event in events %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ event.title }}</h5>
+                            <p class="card-text">{{ event.description|truncatewords:20 }}</p>
+                            <p class="text-muted">
+                                <i class="fas fa-calendar"></i> {{ event.date|date:"M d, Y H:i" }}<br>
+                                <i class="fas fa-map-marker-alt"></i> {{ event.location }}<br>
+                                <i class="fas fa-users"></i> {{ event.registered_count }}/{{ event.capacity }}
+                            </p>
+                            <span class="badge bg-{% if event.status == 'active' %}success{% elif event.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                                {{ event.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{% url 'event_detail' event.pk %}" class="btn btn-primary btn-sm">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">No events found.</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
